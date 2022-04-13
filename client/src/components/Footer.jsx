@@ -5,9 +5,11 @@ import TwitterIcon from "@mui/icons-material/Twitter";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import ContactPhoneIcon from "@mui/icons-material/ContactPhone";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
+import { mobile } from "../responsive";
 
 const Container = styled.div`
   display: flex;
+  ${mobile({ flexDirection: "column" })}
 `;
 const Left = styled.div`
   flex: 1;
@@ -24,6 +26,7 @@ const Description = styled.p`
 
 const SocialContainer = styled.div`
   display: flex;
+  ${mobile({ flexDirection: "column" })}
 `;
 
 const SocialIcon = styled.div`
@@ -41,6 +44,7 @@ const SocialIcon = styled.div`
 const Center = styled.div`
   flex: 1;
   padding: 20px;
+  ${mobile({ display: "none" })}
 `;
 
 const Title = styled.h3`
@@ -62,6 +66,7 @@ const ListItem = styled.li`
 const Right = styled.div`
   flex: 1;
   padding: 20px;
+  ${mobile({ backgroundColor: "lightGray" })}
 `;
 
 const ContactItem = styled.div`
