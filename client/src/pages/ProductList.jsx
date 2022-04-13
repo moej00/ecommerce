@@ -10,7 +10,6 @@ const Container = styled.div`
   margin: 20px;
 `;
 const Title = styled.h1``;
-
 const FilterContainer = styled.div`
   display: flex;
   justify-content: space-between;
