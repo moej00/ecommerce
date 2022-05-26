@@ -1,10 +1,17 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import Announcement from "../components/Announcement";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { mobile } from "../responsive";
+import { useSelector } from "react-redux";
+import StripeCheckout from "react-stripe-checkout";
+import { useState } from "react";
+import { userRequest } from "../requestMethods";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import axios from "axios";
 
 const Container = styled.div``;
 
@@ -153,6 +160,33 @@ const SummaryButton = styled.button`
 `;
 
 const Cart = () => {
+  const cart = useSelector((state) => state.cart);
+  const [stripeToken, setStripeToken] = useState(null);
+  const navigate = useNavigate();
+
+  const KEY =
+    "pk_test_51KppO9ETHrNvcqu4mz4MmALwxpTPtgRMFD2oq6vIdOpxeLnM6ITpviMKSs3tuxeWmKxWXbiT1j5ducc9weL7hU4T00W3Z4CWPy";
+
+  const onToken = (token) => {
+    setStripeToken(token);
+  };
+
+  useEffect(() => {
+    const makeRequest = async () => {
+      try {
+        const res = await axios.post(
+          "http://localhost:4000/api/checkout/payment",
+          {
+            tokenId: stripeToken.id,
+            amount: cart.total * 100,
+          }
+        );
+        navigate("/success", { data: res.data });
+      } catch {}
+    };
+    stripeToken && cart.total >= 1 && makeRequest();
+  }, [stripeToken, cart.total, navigate]);
+
   return (
     <Container>
       <Navbar />
@@ -169,65 +203,46 @@ const Cart = () => {
         </Top>
         <Bottom>
           <Info>
-            <Product>
-              <ProductDetail>
-                <Image src="https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1614188818-TD1MTHU_SHOE_ANGLE_GLOBAL_MENS_TREE_DASHERS_THUNDER_b01b1013-cd8d-48e7-bed9-52db26515dc4.png?crop=1xw:1.00xh;center,top&resize=480%3A%2A" />
-                <Details>
-                  <ProductName>
-                    <b>Product:</b>Jessie Thunder Shoes
-                  </ProductName>
-                  <ProductId>
-                    <b>ID:</b>12444555
-                  </ProductId>
-                  <ProductColor color="black" />
-                  <ProductSize>
-                    <b>Size:</b>10
-                  </ProductSize>
-                </Details>
-              </ProductDetail>
-              <PriceDetail>
-                <ProductAmountContainer>
-                  <RemoveIcon />
-                  <ProductAmount>2</ProductAmount>
-                  <AddIcon />
-                </ProductAmountContainer>
-                <ProductPrice>$ 30</ProductPrice>
-              </PriceDetail>
-            </Product>
+            {cart.products.map((product) => (
+              <Product>
+                <ProductDetail>
+                  <Image src={product.img} />
+                  <Details>
+                    <ProductName>
+                      <b>Product:</b>
+                      {product.title}
+                    </ProductName>
+                    <ProductId>
+                      <b>ID:</b>
+                      {product.id}
+                    </ProductId>
+                    <ProductColor color={product.color} />
+                    <ProductSize>
+                      <b>Size:</b>
+                      {product.size}
+                    </ProductSize>
+                  </Details>
+                </ProductDetail>
+                <PriceDetail>
+                  <ProductAmountContainer>
+                    <RemoveIcon />
+                    <ProductAmount>{product.quantity}</ProductAmount>
+                    <AddIcon />
+                  </ProductAmountContainer>
+                  <ProductPrice>
+                    $ {product.price * product.quantity}
+                  </ProductPrice>
+                </PriceDetail>
+              </Product>
+            ))}
 
             <Hr />
-
-            <Product>
-              <ProductDetail>
-                <Image src="https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1614188818-TD1MTHU_SHOE_ANGLE_GLOBAL_MENS_TREE_DASHERS_THUNDER_b01b1013-cd8d-48e7-bed9-52db26515dc4.png?crop=1xw:1.00xh;center,top&resize=480%3A%2A" />
-                <Details>
-                  <ProductName>
-                    <b>Product:</b>Jessie Thunder Shoes
-                  </ProductName>
-                  <ProductId>
-                    <b>ID:</b>12444555
-                  </ProductId>
-                  <ProductColor color="black" />
-                  <ProductSize>
-                    <b>Size:</b>10
-                  </ProductSize>
-                </Details>
-              </ProductDetail>
-              <PriceDetail>
-                <ProductAmountContainer>
-                  <RemoveIcon />
-                  <ProductAmount>2</ProductAmount>
-                  <AddIcon />
-                </ProductAmountContainer>
-                <ProductPrice>$ 30</ProductPrice>
-              </PriceDetail>
-            </Product>
           </Info>
           <Summary>
             <SummaryTitle>ORDER SUMMARY</SummaryTitle>
             <SummaryItem>
               <SummaryItemText>Subtotal</SummaryItemText>
-              <SummaryItemPrice>$ 60</SummaryItemPrice>
+              <SummaryItemPrice>${cart.total}</SummaryItemPrice>
             </SummaryItem>
             <SummaryItem>
               <SummaryItemText>Shipping Price</SummaryItemText>
@@ -239,9 +254,20 @@ const Cart = () => {
             </SummaryItem>
             <SummaryItem type="total">
               <SummaryItemText>Total</SummaryItemText>
-              <SummaryItemPrice>$ 60</SummaryItemPrice>
+              <SummaryItemPrice>$ {cart.total}</SummaryItemPrice>
             </SummaryItem>
-            <SummaryButton>CHECK OUT NOW</SummaryButton>
+            <StripeCheckout
+              name="PayForless"
+              image=""
+              billingAddress
+              shippingAddress
+              description={`Your total is $${cart.total}`}
+              amount={cart.total * 100}
+              token={onToken}
+              stripeKey={KEY}
+            >
+              <SummaryButton>CHECK OUT NOW</SummaryButton>
+            </StripeCheckout>
           </Summary>
         </Bottom>
       </Wrapper>

@@ -11,9 +11,11 @@ import Product from "./pages/Product";
 import ProductList from "./pages/ProductList";
 import Register from "./pages/Register";
 import Cart from "./pages/Cart";
+import Success from "./pages/Success";
+import { useSelector } from "react-redux";
 
 function App() {
-  const user = false;
+  const user = useSelector((state) => state.user.currentUser);
   return (
     <Router>
       <Routes>
@@ -28,9 +30,10 @@ function App() {
         />
         <Route path="/product/:id" element={<Product />} />
 
-        <Route path="/prducts/category" element={<ProductList />} />
+        <Route path="/products/:category" element={<ProductList />} />
 
         <Route path="/cart" element={<Cart />} />
+        <Route path="/success" element={<Success />} />
       </Routes>
     </Router>
   );
